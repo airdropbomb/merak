@@ -91,8 +91,8 @@ function readKeys(filename = 'pvkey.txt') {
 
 // Display cool banner
 function displayBanner() {
-    console.log(chalk.cyan(figlet.textSync('SUI   DEX   BOT', { font: 'Standard' })));
-    console.log(chalk.yellow('🚀 Automating Wrap, Swap, and Liquidity Created By Kazuha787\n'));
+    console.log(chalk.cyan(figlet.textSync('ADB NODE', { font: 'Standard' })));
+    console.log(chalk.yellow('🚀 Sui Automating Wrap, Swap, and Liquidity\n'));
 }
 
 // Prompt user for swap counts
