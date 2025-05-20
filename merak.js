@@ -65,15 +65,26 @@ const CONFIG = {
         label: 'Add Liquidity wDUBHE-wSTARS',
     },
     DELAY_BETWEEN_TX_MS: 5000, // Delay between transactions in milliseconds
-    INTERVAL_24H_MS: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
 };
 
-// Read private keys from pvkey.txt
+const CONTRACTS = {
+    WRAP_TARGET: '0xa6477a6bf50e2389383b34a76d59ccfbec766ff2decefe38e1d8436ef8a9b245::dubhe_wrapper_system::wrap',
+    DEX_TARGET: '0xa6477a6bf50e2389383b34a76d59ccfbec766ff2decefe38e1d8436ef8a9b245::dubhe_dex_system::swap_exact_tokens_for_tokens',
+    SHARED_OBJECT: '0x8ece4cb6de126eb5c7a375f90c221bdc16c81ad8f6f894af08e0b6c25fb50a45',
+    PATHS: {
+        wSUI_wDUBHE: [BigInt(0), BigInt(1)],
+        wDUBHE_wSUI: [BigInt(1), BigInt(0)],
+        wSUI_wSTARS: [BigInt(0), BigInt(3)],
+        wSTARS_wSUI: [BigInt(3), BigInt(0)],
+    },
+};
+
+// Read private keys from pvkey.t5xt
 function readKeys(filename = 'pvkey.txt') {
     try {
         return fs.readFileSync(filename, 'utf8').split('\n').map(line => line.trim()).filter(Boolean);
     } catch (e) {
-        console.error(chalk.red('Error reading pvkey.txt:', e.message));
+        console.error(chalk.red('Error reading key.txt:', e.message));
         process.exit(1);
     }
 }
@@ -81,10 +92,10 @@ function readKeys(filename = 'pvkey.txt') {
 // Display cool banner
 function displayBanner() {
     console.log(chalk.cyan(figlet.textSync('ADB NODE', { font: 'Standard' })));
-    console.log(chalk.yellow('🚀 Sui Automating Wrap, Swap, and Liquidity\n'));
+    console.log(chalk.yellow('🚀Sui Automating Wrap, Swap, and Liquidity\n'));
 }
 
-// Prompt user for swap counts (only called once at the start)
+// Prompt user for swap counts
 async function promptSwapCounts() {
     const questions = [];
     if (CONFIG.SWAP_wSUI_wDUBHE.enabled) {
@@ -381,9 +392,10 @@ async function replayWithKey(privKey, spinner) {
 }
 
 // Main function to process all keys
-async function runTransactions() {
+async function main() {
     const keys = readKeys();
     displayBanner();
+    await promptSwapCounts();
     displayTxSummary(keys);
 
     const spinner = ora('Starting transactions...').start();
@@ -400,22 +412,6 @@ async function runTransactions() {
     }
 
     spinner.succeed(chalk.green('All transactions completed! 🎉'));
-    console.log(chalk.cyan(`Next run scheduled in 24 hours at ${new Date(Date.now() + CONFIG.INTERVAL_24H_MS).toLocaleString()}`));
-}
-
-// Main function with 24-hour timer
-async function main() {
-    // Prompt for swap counts only once at the start
-    await promptSwapCounts();
-
-    // Run transactions immediately
-    await runTransactions();
-
-    // Set interval to run every 24 hours
-    setInterval(async () => {
-        console.log(chalk.magenta(`\n🔄 Starting new 24-hour cycle at ${new Date().toLocaleString()}\n`));
-        await runTransactions();
-    }, CONFIG.INTERVAL_24H_MS);
 }
 
 main().catch((e) => {
